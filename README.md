@@ -1,8 +1,22 @@
 # 🌌 The Multiverse of Chatbots: Stateful Memory Vault
 
-Welcome to the **Multiverse of Chatbots**, a high-performance, AI-powered web application that allows users to interact with multiple famous personalities (like Satoru Gojo, Luffy, Light Yagami, and more) from across the multiverse. 
+> ### 🎥 Working Demo Video
+> **Watch the full Multiverse Chatbot in action** (demonstrating the continuous stateful conversation and custom AI avatars):  
+> **[👉 CLICK HERE TO VIEW THE DEMO ON GOOGLE DRIVE](https://drive.google.com/file/d/18RuHwbF87R7yxsO44ju9pAZDXrRxJVnJ/view?usp=drive_link)**
 
-This project was built as part of the **MirAI School of Technology Virtual Summer Internship**, featuring a major upgrade to a **Stateful Architecture** using Streamlit's Memory Vault, ensuring the AI characters remember the entire context of your conversation natively.
+---
+
+## 📖 About the Application
+
+Welcome to the **Multiverse of Chatbots**, a high-performance, AI-powered web application that allows users to seamlessly interact with legendary personalities from across the multiverse. 
+
+Originally starting as a stateless interface, this project was deeply upgraded for the **MirAI School of Technology Virtual Summer Internship (AI Builder Track)**. The core objective of this application is to showcase how to build **Stateful AI Chatbots**. 
+
+**How it works:**
+1. **Choose your Character:** Using the sidebar, users can select from 10 different famous characters (such as Satoru Gojo, Luffy, Levi Ackerman, or Light Yagami).
+2. **Dynamic Personalities:** The application instantly injects a highly specific system prompt into the AI model, completely altering the AI's vocabulary, intelligence, and mannerisms to flawlessly roleplay as the chosen character.
+3. **The Memory Vault:** Unlike basic chatbots that forget who you are every time you press enter, this application utilizes Streamlit's `st.session_state` to create a "Memory Vault". It remembers every single message you've sent during your session, allowing for deep, continuous, and highly contextual conversations.
+4. **Immersive UI:** The entire experience is wrapped in a custom glassmorphism design, featuring a deep-space gradient and dynamic, high-quality AI-generated portraits for every single character that appear directly inside the chat bubbles.
 
 ---
 
@@ -18,7 +32,7 @@ This project was built as part of the **MirAI School of Technology Virtual Summe
 
 ## 🏗️ System Architecture
 
-The application follows a simple but powerful monolithic architecture designed for speed and statefulness.
+The application follows a monolithic architecture designed for speed and statefulness.
 
 ```mermaid
 graph TD
@@ -71,7 +85,3 @@ graph TD
    ```bash
    streamlit run app.py
    ```
-
-## 🎥 Demo Video
-Watch the full Multiverse Chatbot in action (demonstrating the continuous 3-message stateful conversation):
-[👉 Click here to view the Demo Video on Google Drive](https://drive.google.com/file/d/18RuHwbF87R7yxsO44ju9pAZDXrRxJVnJ/view?usp=drive_link)
