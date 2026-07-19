@@ -5,6 +5,7 @@ import urllib.parse
 import requests
 from dotenv import load_dotenv
 from groq import Groq
+import google.generativeai as genai
 from gtts import gTTS
 import base64
 from io import BytesIO
@@ -21,9 +22,17 @@ st.title("📖 AI Visual Novel Engine")
 def get_groq_client():
     return Groq(api_key=os.environ.get("GROK_API_KEY"))
 
-client = get_groq_client()
+@st.cache_resource
+def setup_gemini():
+    genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+    # The gemini-1.5-flash model supports JSON natively
+    return genai.GenerativeModel("gemini-1.5-flash", generation_config={"response_mime_type": "application/json"})
+
+groq_client = get_groq_client()
+gemini_model = setup_gemini()
 
 st.sidebar.header("Director's Configuration")
+ai_provider = st.sidebar.radio("AI Provider", ["Groq", "Gemini"])
 story_genre = st.sidebar.selectbox("Story Genre", ["Fantasy", "Sci-Fi", "Mystery", "Cyberpunk", "Horror"])
 art_style = st.sidebar.selectbox("Art Style", ["Anime", "Realistic", "Watercolor", "Pixel Art", "Comic Book"])
 
@@ -46,23 +55,31 @@ Ensure the options are engaging actions the user can take. Always return valid J
 """
 
 def generate_scene(user_input):
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    
-    # Add history
-    for msg in st.session_state.chat_history:
-        messages.append(msg)
-        
-    messages.append({"role": "user", "content": user_input})
-    
-    with st.spinner("Generating next scene..."):
+    with st.spinner(f"Generating next scene using {ai_provider}..."):
         try:
-            response = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=messages,
-                response_format={"type": "json_object"}
-            )
-            
-            raw_content = response.choices[0].message.content
+            raw_content = ""
+            if ai_provider == "Groq":
+                messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+                for msg in st.session_state.chat_history:
+                    messages.append(msg)
+                messages.append({"role": "user", "content": user_input})
+                
+                response = groq_client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=messages,
+                    response_format={"type": "json_object"}
+                )
+                raw_content = response.choices[0].message.content
+                
+            elif ai_provider == "Gemini":
+                # For Gemini, we compile the system prompt and history into a simple prompt
+                prompt = SYSTEM_PROMPT + "\n\nChat History:\n"
+                for msg in st.session_state.chat_history:
+                    prompt += f"{msg['role']}: {msg['content']}\n"
+                prompt += f"\nuser: {user_input}\nProvide the JSON response for the next scene."
+                
+                response = gemini_model.generate_content(prompt)
+                raw_content = response.text
             
             # Phase 2: The Structured JSON Engine
             scene_data = json.loads(raw_content)
@@ -84,7 +101,6 @@ if st.session_state.current_scene:
     st.markdown(f"### {scene.get('story_text', '')}")
     
     # Render Audio (Phase 4)
-    # Using st.audio with the raw file data
     try:
         tts = gTTS(scene.get('story_text', ''), lang='en')
         fp = BytesIO()
