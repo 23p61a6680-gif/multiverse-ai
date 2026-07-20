@@ -1,87 +1,90 @@
-# 🌌 The Multiverse of Chatbots: Stateful Memory Vault
+# AI Visual Novel Engine — MirAI Capstone
 
-> ### 🎥 Working Demo Video
-> **Watch the full Multiverse Chatbot in action** (demonstrating the continuous stateful conversation and custom AI avatars):  
-> **[👉 CLICK HERE TO VIEW THE DEMO ON GOOGLE DRIVE](https://drive.google.com/file/d/18RuHwbF87R7yxsO44ju9pAZDXrRxJVnJ/view?usp=drive_link)**
+> **A multi-modal, AI-powered "Choose Your Own Adventure" Visual Novel Engine built with Python & Streamlit.**
 
----
-
-## 📖 About the Application
-
-Welcome to the **Multiverse of Chatbots**, a high-performance, AI-powered web application that allows users to seamlessly interact with legendary personalities from across the multiverse. 
-
-Originally starting as a stateless interface, this project was deeply upgraded for the **MirAI School of Technology Virtual Summer Internship (AI Builder Track)**. The core objective of this application is to showcase how to build **Stateful AI Chatbots**. 
-
-**How it works:**
-1. **Choose your Character:** Using the sidebar, users can select from 10 different famous characters (such as Satoru Gojo, Luffy, Levi Ackerman, or Light Yagami).
-2. **Dynamic Personalities:** The application instantly injects a highly specific system prompt into the AI model, completely altering the AI's vocabulary, intelligence, and mannerisms to flawlessly roleplay as the chosen character.
-3. **The Memory Vault:** Unlike basic chatbots that forget who you are every time you press enter, this application utilizes Streamlit's `st.session_state` to create a "Memory Vault". It remembers every single message you've sent during your session, allowing for deep, continuous, and highly contextual conversations.
-4. **Immersive UI:** The entire experience is wrapped in a custom glassmorphism design, featuring a deep-space gradient and dynamic, high-quality AI-generated portraits for every single character that appear directly inside the chat bubbles.
+## 🎥 Project Demo
+👉 **[Watch the Demo Video](https://drive.google.com/file/d/1oNNXPmlTB599HnHGZe8Fl4QBnFJSDYjz/view?usp=sharing)**
 
 ---
 
-## ✨ Key Features
-- **Stateful Memory Vault**: Fully integrated with `st.session_state` so your conversation history persists seamlessly across page reloads and character swaps.
-- **Dynamic AI Avatars**: Uses custom, high-quality AI-generated local portraits (via `PIL.Image`) mapped individually to each anime character to create a deeply immersive chat interface.
-- **Glassmorphism UI**: A completely custom, sleek CSS frontend with a deep-space gradient background, transparent hovering buttons, and modern typography (`Inter` font).
-- **Blazing Fast AI**: Powered by Groq's LPU inference engine running the `llama-3.1-8b-instant` model for near-zero latency responses.
-- **Personality Matrix**: Highly complex system prompts strictly enforce character rules, speaking styles, and response lengths.
-- **Global History Export**: Download your entire multiverse conversation log as a `.txt` file or view it via an interactive popover.
+## ✨ Features
+| Feature | Description |
+|---|---|
+| 🧠 **Dual AI Engine** | Uses Groq (Llama 3.3 70B) as the primary AI, with automatic fallback to Gemini 2.5 Flash if rate-limited |
+| 📜 **Structured JSON Engine** | Forces the AI to return strict JSON with `story_text`, `image_prompt`, and `options` keys |
+| 🎮 **Dynamic Choice UI** | Buttons are generated dynamically from the AI's JSON response — no hardcoded UI |
+| 🖼️ **AI Scene Images** | Every scene generates a contextual image via Pollinations.ai (zero token cost) |
+| 🔊 **TTS Narration** | Story text is converted to speech using gTTS and autoplays in the browser |
+| 📚 **Comic Book History** | Alternating image/text layout lets you re-read your story like a graphic novel |
+| ⚡ **Genre Twist** | Changing genre mid-game creates a dramatic AI-written plot transition |
+| 🛡️ **Graceful Failures** | All API calls are wrapped in `try/except` — the app never crashes |
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ Architecture
 
-The application follows a monolithic architecture designed for speed and statefulness.
-
-```mermaid
-graph TD
-    subclass1[User Interface]
-    U[User] -->|Inputs Prompt| UI[Streamlit Frontend]
-    UI --> |Loads Custom CSS & Assets| A[Local Image Assets]
-    
-    subclass2[Application Logic]
-    UI -->|Updates| State[(st.session_state)]
-    State -->|Reads History| LLM[Groq API Client]
-    
-    subclass3[External Services]
-    LLM -->|Sends Prompt + History| Groq[Groq LPU Engine]
-    Groq -->|Streams Response| LLM
-    LLM -->|Saves to Memory Vault| State
-    State -->|Renders Chat Message| UI
+```
+User Input
+    │
+    ▼
+┌─────────────────────────────────────┐
+│  Groq API (Primary — Fast & Free)   │
+│  Model: llama-3.3-70b-versatile     │
+│  Force JSON: response_format        │
+└─────────────┬───────────────────────┘
+              │ (on rate-limit / error)
+              ▼
+┌─────────────────────────────────────┐
+│  Gemini 2.5 Flash (Fallback)        │
+│  Force JSON: response_mime_type     │
+└─────────────┬───────────────────────┘
+              │
+              ▼
+     json.loads(raw_content)
+              │
+     ┌────────┴─────────┐
+     │                  │
+     ▼                  ▼
+Pollinations.ai      gTTS TTS
+(Scene Image)     (MP3 Narration)
+     │                  │
+     └────────┬─────────┘
+              ▼
+    Streamlit UI Render
+    (Image + Story Card + Choices)
 ```
 
-### 💻 Tech Stack
-- **Frontend & Routing**: Streamlit (`st.chat_message`, `st.chat_input`)
-- **Backend**: Python 3.x
-- **LLM Provider**: Groq API
-- **Model**: `llama-3.1-8b-instant`
-- **Image Processing**: Pillow (`PIL`)
-- **Styling**: HTML/CSS Injection
+### Key Engineering Concepts
+- **`@st.cache_resource`** — AI clients are instantiated once and reused
+- **Dual session state stores** — `chat_history` (clean, for AI context) and `scene_store` (rich, for comic UI)
+- **`try/except` fallback chain** — Groq → Gemini → graceful toast notification
+- **Dynamic button loop** — `for opt in options: st.button(opt)` generates the entire choice UI at runtime
 
 ---
 
-## 🚀 Installation & Setup
+## 🚀 Run Locally
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/23p61a6680-gif/multiverse-ai.git
-   cd multiverse-ai
-   ```
+```bash
+git clone https://github.com/23p61a6680-gif/miai-storyteller.git
+cd miai-storyteller
 
-2. **Install dependencies:**
-   Make sure you have Python installed, then run:
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Install dependencies
+pip install -r requirements.txt
 
-3. **Environment Setup:**
-   Create a `.env` file in the root directory and add your Groq API key:
-   ```env
-   GROK_API_KEY=your_api_key_here
-   ```
+# Add your API keys to a .env file
+echo "GROK_API_KEY=your_groq_key_here" > .env
+echo "GEMINI_API_KEY=your_gemini_key_here" >> .env
 
-4. **Run the Application:**
-   ```bash
-   streamlit run app.py
-   ```
+# Run the app
+streamlit run app.py
+```
+
+## 🛠️ Tech Stack
+- **Frontend:** Streamlit + Custom CSS (Cinzel/Lora fonts, animated gradients)
+- **AI Text:** Groq (Llama 3.3 70B) → Gemini 2.5 Flash fallback
+- **AI Images:** Pollinations.ai REST API
+- **TTS Audio:** gTTS (Google Text-to-Speech)
+- **Env Management:** python-dotenv
+
+---
+*Built for the MirAI School of Technology Virtual Summer Internship 2026 — Capstone Project.*
